@@ -2,6 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { getNotes, readNote } from '@/lib'
+import { GetNotes, ReadNote } from '@shared/types'
 
 function createWindow(): void {
   // Create the browser window.
@@ -11,10 +13,16 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
+    center: true,
+    frame: false, // Oculta el marco de la ventana
+    transparent: true, // Habilita la transparencia
+    backgroundColor: '#000', // Fondo transparente
+    titleBarStyle: 'hidden', // Muestra los controles del sistema
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: true,
-      contextIsolation:true
+      contextIsolation: true,
+      nodeIntegration: true
     }
   })
 
@@ -52,6 +60,10 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  ipcMain.handle('getNotes', (_, ...args: Parameters<GetNotes>) => getNotes(...args))
+  ipcMain.handle('readNote', (_, ...args: Parameters<ReadNote>) => readNote(...args))
+
 
   createWindow()
 
